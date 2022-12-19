@@ -10,14 +10,13 @@
 // Define if BLE DIS is wanted
 #define DEVICE_INFORMATION_SERVICE_AVAILABLE
 
-// serial port pin connections on nRF52 board
-#ifdef SERIAL_CONSOLE_AVAILABLE
-#define RX_PIN_NUMBER  NRF_GPIO_PIN_MAP(0,20)
-#define TX_PIN_NUMBER  NRF_GPIO_PIN_MAP(0,17)
-// If flow control enabled, pin connections for CTS/RTS
-#define CTS_PIN_NUMBER UART_PIN_DISCONNECTED
-#define RTS_PIN_NUMBER UART_PIN_DISCONNECTED
-#endif
+// PWM port pin connections on nRF52 board
+// Direction pin
+#define MOTOR_DRIVER_APHASE 20
+// PWM pin
+#define MOTOR_DRIVER_AENBL 17
+#define NRF_PWM_APHASE NRF_GPIO_PIN_MAP(0,MOTOR_DRIVER_APHASE)
+#define NRF_PWM_AENBL NRF_GPIO_PIN_MAP(0,MOTOR_DRIVER_AENBL)
 
 // Optional LED indicators for BLE states
 #define BSP_LED_INDICATE_CONNECTED             BSP_BOARD_LED_2

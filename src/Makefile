@@ -7,6 +7,9 @@ SDK_ROOT := C:/NordicSDK/nRF5SDK160098a08e2
 PROJ_DIR := ./
 PROJ_INC_DIR := .
 WIRELESS_PROJ_DIR := ../WirelessSensor/Sensor/src
+WIRELESS_INC_DIR := $(WIRELESS_PROJ_DIR)
+MOTOR_DRIVER_SRC_DIR := $(PROJ_DIR)/MotorDriver
+MOTOR_DRIVER_INC_DIR := $(PROJ_DIR)/MotorDriver
 I2C_SRC_DIR := $(WIRELESS_PROJ_DIR)/I2C
 I2C_INC_DIR := $(WIRELESS_PROJ_DIR)/I2C
 IMU_SRC_DIR := $(WIRELESS_PROJ_DIR)/IMU
@@ -30,6 +33,7 @@ $(OUTPUT_DIRECTORY)/nrf52840_xxaa.out: \
 # Source files common to all targets
 SRC_FILES += \
   $(PROJ_DIR)/main.cpp \
+  $(MOTOR_DRIVER_SRC_DIR)/MotorDriver.cpp \
   $(I2C_SRC_DIR)/TwoWire.cpp \
   $(AHRS_SRC_DIR)/AHRS.cpp \
   $(AHRS_SRC_DIR)/MahonyAHRS.cpp \
@@ -60,6 +64,7 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uart.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uarte.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_twi.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_pwm.c \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52840.c \
   $(SDK_ROOT)/components/libraries/button/app_button.c \
   $(SDK_ROOT)/components/libraries/util/app_error.c \
@@ -156,6 +161,8 @@ SRC_FILES += \
 INC_FOLDERS += \
   $(CONFIG_DIR) \
   $(PROJ_INC_DIR) \
+  $(MOTOR_DRIVER_INC_DIR) \
+  $(WIRELESS_INC_DIR) \
   $(I2C_INC_DIR) \
   $(IMU_INC_DIR) \
   $(BLE_INC_DIR) \

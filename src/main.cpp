@@ -71,8 +71,10 @@
 #include "ble_svcs_cmd.h"
 #include "ble_svcs.h"
 
+#include "MotorDriver.h"
 
 IMU imu;
+MotorDriver md;
 static uint32_t cmd_get_cnt = 0;
 
 /* UART defines */
@@ -348,7 +350,7 @@ int main(void)
     power_management_init();
 
     // Start execution.
-    NRF_LOG_INFO("AHRS example started.");
+    NRF_LOG_INFO("Balancing Robot example started.");
 
     // Initialize BLE 
     ble_svcs_init();
@@ -360,6 +362,10 @@ int main(void)
     // Start BLE Advertising
     ble_svcs_application_timers_start();
     ble_svcs_advertising_start();
+
+    // Start Motor Driver
+    md = MotorDriver();
+    md.init();
   
     // Enter main loop.
     for (;; cmd_get_cnt++)
