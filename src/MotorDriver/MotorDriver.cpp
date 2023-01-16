@@ -57,84 +57,119 @@
 #include "bsp.h"
 #include "nrfx_pwm.h"
 #include "nrfx_clock.h"
+#include "nrfx_gpiote.h"
+
+#include "nrf_log.h"
+#include "nrf_log_ctrl.h"
+#include "nrf_log_default_backends.h"
 
 #include "MotorDriver.h"
 
+constexpr int32_t PRINT_DEBUG_INTERVAL = 64;
+
 static nrfx_pwm_t m_pwm0 = NRFX_PWM_INSTANCE(0);
+static int print_debug = 0;
 
 // This is for tracking PWM instances being used, so we can unintialize only
 // the relevant ones when switching from one demo to another.
 #define USED_PWM(idx) (1UL << idx)
 static uint8_t m_used = 0;
 
-#if 0
-extern "C" {
-    static void clock_event_handler(nrfx_clock_evt_type_t event)
+// 4 channels , only 2 used
+static uint16_t seq_values[] =
+{
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+};
+
+MotorDriver::MotorDriver() :
+    pidCtrl({MOTOR_PID_KP, MOTOR_PID_KI, MOTOR_PID_KD}, 
+        MOTOR_PID_SP, PID_CONTROL_SETTING_MAX)
+{
+}
+
+void MotorDriver::setPitchAngle(const float pitch)
+{
+    pid_ctrl_t drv_ctrla, drv_ctrlb; 
+
+    drv_ctrla = drv_ctrlb = pidCtrl.update(pitch);
+    this->setValues(drv_ctrla, drv_ctrlb);
+}
+
+void MotorDriver::setValues(pid_ctrl_t driver0, pid_ctrl_t driver1)
+{
+#if 1
+    if (print_debug == 0)
     {
+        NRF_LOG_INFO("%hd", driver0);
+    } else if (print_debug < PRINT_DEBUG_INTERVAL) {
+        print_debug++;
+    } else {
+        print_debug = 0;
     }
-}
 #endif
-
-MotorDriver::MotorDriver()
-{
-}
-
-MotorDriver::~MotorDriver()
-{
+    if (driver0 >= 0)
+    {
+        nrfx_gpiote_out_set(MOTOR_DRIVER_APHASE);
+    } else {
+        nrfx_gpiote_out_clear(MOTOR_DRIVER_APHASE);
+    }
+    if (driver1 >= 0)
+    {
+        nrfx_gpiote_out_set(MOTOR_DRIVER_BPHASE);
+    } else {
+        nrfx_gpiote_out_clear(MOTOR_DRIVER_BPHASE);
+    }
+    seq_values[0] = PWM_POL_FALLING_EDGE | (abs(driver0) & MOTOR_CONTROL_SETTING_MASK);
+    seq_values[1] = PWM_POL_FALLING_EDGE | (abs(driver1) & MOTOR_CONTROL_SETTING_MASK); 
 }
 
 void MotorDriver::init()
 {
-    // APP_ERROR_CHECK(nrfx_clock_init(clock_event_handler));
-    // nrfx_clock_lfclk_start();
+    if (!nrfx_gpiote_is_init())
+    {
+        APP_ERROR_CHECK(nrfx_gpiote_init());
+    }
+    
+    // Configure GPIO pins for Motor direction
+    nrfx_gpiote_out_config_t gpio_configA = NRFX_GPIOTE_CONFIG_OUT_SIMPLE(false);
+    APP_ERROR_CHECK(nrfx_gpiote_out_init(MOTOR_DRIVER_APHASE, &gpio_configA));
 
-    /*
-     * This demo uses only one channel, which is reflected on LED 1.
-     * The LED blinks three times (200 ms on, 200 ms off), then it stays off
-     * for one second.
-     * This scheme is performed three times before the peripheral is stopped.
-     */
+    nrfx_gpiote_out_config_t gpio_configB = NRFX_GPIOTE_CONFIG_OUT_SIMPLE(false);
+    APP_ERROR_CHECK(nrfx_gpiote_out_init(MOTOR_DRIVER_BPHASE, &gpio_configB));
 
+    // Configure PWM pins for Motor PWM
     nrfx_pwm_config_t const config0 =
     {
         .output_pins =
         {
-            MOTOR_DRIVER_AENBL,                // channel 0
-            NRFX_PWM_PIN_NOT_USED,             // channel 1
-            NRFX_PWM_PIN_NOT_USED,             // channel 2
-            NRFX_PWM_PIN_NOT_USED,             // channel 3
+            MOTOR_DRIVER_AENBL,        // channel 0
+            MOTOR_DRIVER_BENBL,        // channel 1
+            NRFX_PWM_PIN_NOT_USED,     // channel 2
+            NRFX_PWM_PIN_NOT_USED,     // channel 3
         },
         .irq_priority = APP_IRQ_PRIORITY_LOWEST,
         .base_clock   = NRF_PWM_CLK_125kHz,
         .count_mode   = NRF_PWM_MODE_UP,
-        .top_value    = 25000,
-        .load_mode    = NRF_PWM_LOAD_COMMON,
+        .top_value    = MOTOR_DRIVER_TOP_VALUE,
+        //.load_mode    = NRF_PWM_LOAD_COMMON,
+        .load_mode    = NRF_PWM_LOAD_INDIVIDUAL,
         .step_mode    = NRF_PWM_STEP_AUTO
     };
     APP_ERROR_CHECK(nrfx_pwm_init(&m_pwm0, &config0, NULL));
     m_used |= USED_PWM(0);
-
-    // This array cannot be allocated on stack (hence "static") and it must
-    // be in RAM (hence no "const", though its content is not changed).
-    static uint16_t /*const*/ seq_values[] =
-    {
-        0x8000,
-             0,
-        0x8000,
-             0,
-        0x8000,
-             0
-    };
 
     nrf_pwm_sequence_t const seq =
     {
         seq_values,            // values.p_common
         .length = NRF_PWM_VALUES_LENGTH(seq_values),  // length
         .repeats = 0,             // repeats
-        .end_delay = 4              // end_delay
+        .end_delay = 0              // end_delay
     };
 
-    (void)nrfx_pwm_simple_playback(&m_pwm0, &seq, 3, NRFX_PWM_FLAG_LOOP);
+    (void)nrfx_pwm_simple_playback(&m_pwm0, &seq, 1, NRFX_PWM_FLAG_LOOP);
 
 }
 
