@@ -6,7 +6,8 @@ SDK_ROOT := C:/NordicSDK/nRF5SDK160098a08e2
 
 PROJ_DIR := ./
 PROJ_INC_DIR := .
-WIRELESS_PROJ_DIR := ../WirelessSensor/Sensor/src
+#WIRELESS_PROJ_DIR := ../WirelessSensor/Sensor/src
+WIRELESS_PROJ_DIR := ../../WirelessSensor/Sensor/src
 WIRELESS_INC_DIR := $(WIRELESS_PROJ_DIR)
 MOTOR_DRIVER_SRC_DIR := $(PROJ_DIR)/MotorDriver
 MOTOR_DRIVER_INC_DIR := $(PROJ_DIR)/MotorDriver
@@ -27,6 +28,8 @@ FLASH_SRC_DIR := $(WIRELESS_PROJ_DIR)/Flash
 FLASH_INC_DIR := $(WIRELESS_PROJ_DIR)/Flash
 BOARD_SRC_DIR := $(WIRELESS_PROJ_DIR)/Board
 BOARD_INC_DIR := $(WIRELESS_PROJ_DIR)/Board
+APPDEMUX_INC_DIR := $(WIRELESS_PROJ_DIR)/AppDemux
+APPDEMUX_SRC_DIR := $(WIRELESS_PROJ_DIR)/AppDemux
 CONFIG_DIR := ../config
 VERBOSE := 1
 
@@ -49,6 +52,7 @@ SRC_FILES += \
   $(LIS3MDL_SRC_DIR)/LIS3MDL_MAG_Driver.c \
   $(LIS3MDL_SRC_DIR)/LIS3MDLSensor.cpp \
   $(BOARD_SRC_DIR)/board_init.cpp \
+  $(APPDEMUX_SRC_DIR)/AppDemux.cpp \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52840.S \
   $(SDK_ROOT)/components/libraries/bsp/bsp.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp_btn_ble.c \
@@ -176,6 +180,7 @@ INC_FOLDERS += \
   $(LIS3MDL_INC_DIR) \
   $(AHRS_INC_DIR) \
   $(BOARD_INC_DIR) \
+  $(APPDEMUX_INC_DIR) \
   $(SDK_ROOT)/components/libraries/uart \
   $(SDK_ROOT)/components/nfc/ndef/generic/message \
   $(SDK_ROOT)/components/nfc/t2t_lib \

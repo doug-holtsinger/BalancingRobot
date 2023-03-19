@@ -1,7 +1,8 @@
 
-#include "PID.h"
-
 #ifndef __MOTOR_DRIVER__H
+
+#include "PID.h"
+#include "MotorDriverCmd.h"
 
 typedef int16_t pid_ctrl_t;
 typedef uint16_t motor_ctrl_t;
@@ -25,6 +26,8 @@ class MotorDriver {
     public:
         MotorDriver();
         void init();
+	void cmd(const MOTOR_DRIVER_CMD_t i_cmd);
+	void cmd2(const uint8_t i_cmd);
         void setValues(pid_ctrl_t driver0, pid_ctrl_t driver1);
         void setPitchAngle(const float pitch);
     private:

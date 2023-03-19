@@ -73,9 +73,7 @@
 
 #include "MotorDriver.h"
 #include "board_init.h"
-
-IMU imu;
-MotorDriver md;
+#include "AppDemux.h"
 
 /**@brief Function for application main entry.
  */
@@ -83,22 +81,36 @@ int main(void)
 {
     uint32_t cmd_get_cnt = 0;
     float roll, pitch, yaw;
+    IMU imu = IMU();
+    MotorDriver md = MotorDriver();
 
     // Initialize.
     board_init();
 
-    // Start execution.
-    NRF_LOG_INFO("Balancing Robot example started.");
- 
     // Start IMU
-    imu = IMU();
     imu.init();
+
+    // Add command handler for IMU
+    appDemuxAddHandler( 
+        std::bind( &IMU::cmd2, std::ref(imu), std::placeholders::_1),
+        appDemuxCmdType(IMU_CMD_t::CMD_MAX) );
+
+    // Start Motor Driver
+    md.init();
+
+    // Add command handler for Motor Driver
+    appDemuxAddHandler( 
+        std::bind( &MotorDriver::cmd2, std::ref(md), std::placeholders::_1),
+        appDemuxCmdType(MOTOR_DRIVER_CMD_t::CMD_MAX) );
+
+
+    // register callback handler 
+    ble_svcs_register(&appDemuxExecHandler);
 
     board_post_init();
 
-    // Start Motor Driver
-    md = MotorDriver();
-    md.init();
+    // Start execution.
+    NRF_LOG_INFO("Balancing Robot example started.");
   
     // Enter main loop.
     for (;; cmd_get_cnt++)

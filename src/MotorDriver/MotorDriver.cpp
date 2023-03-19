@@ -68,7 +68,7 @@
 constexpr int32_t PRINT_DEBUG_INTERVAL = 64;
 
 static nrfx_pwm_t m_pwm0 = NRFX_PWM_INSTANCE(0);
-static int print_debug = 0;
+// static int print_debug = 0;
 
 // This is for tracking PWM instances being used, so we can unintialize only
 // the relevant ones when switching from one demo to another.
@@ -100,16 +100,6 @@ void MotorDriver::setPitchAngle(const float pitch)
 
 void MotorDriver::setValues(pid_ctrl_t driver0, pid_ctrl_t driver1)
 {
-#if 1
-    if (print_debug == 0)
-    {
-        NRF_LOG_INFO("%hd", driver0);
-    } else if (print_debug < PRINT_DEBUG_INTERVAL) {
-        print_debug++;
-    } else {
-        print_debug = 0;
-    }
-#endif
     if (driver0 >= 0)
     {
         nrfx_gpiote_out_set(MOTOR_DRIVER_APHASE);
@@ -173,4 +163,10 @@ void MotorDriver::init()
 
 }
 
+void MotorDriver::cmd(const MOTOR_DRIVER_CMD_t i_cmd)
+{
+}
 
+void MotorDriver::cmd2(const uint8_t i_cmd)
+{
+}
