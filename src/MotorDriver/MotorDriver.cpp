@@ -63,7 +63,9 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 
+#include "notify.h"
 #include "MotorDriver.h"
+#include "MotorDriverCmd.h"
 
 constexpr int32_t PRINT_DEBUG_INTERVAL = 64;
 
@@ -163,10 +165,22 @@ void MotorDriver::init()
 
 }
 
-void MotorDriver::cmd(const MOTOR_DRIVER_CMD_t i_cmd)
+void MotorDriver::send_all_client_data()
+{
+    pidCtrl.send_all_client_data();
+}
+
+void MotorDriver::cmd_internal(const MOTOR_DRIVER_CMD_t i_cmd)
 {
 }
 
-void MotorDriver::cmd2(const uint8_t i_cmd)
+void MotorDriver::cmd(const uint8_t i_cmd)
 {
+    cmd_internal(static_cast<MOTOR_DRIVER_CMD_t>(i_cmd));
 }
+
+void MotorDriver::PIDCmd(const uint8_t i_cmd)
+{
+    pidCtrl.cmd(static_cast<PID_CMD_t>(i_cmd));
+}
+

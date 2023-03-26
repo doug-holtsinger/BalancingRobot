@@ -91,27 +91,31 @@ int main(void)
     imu.init();
 
     // Add command handler for IMU
-    appDemuxAddHandler( 
-        std::bind( &IMU::cmd2, std::ref(imu), std::placeholders::_1),
+    appDemuxAddHandler(
+        std::bind( &IMU::cmd, std::ref(imu), std::placeholders::_1),
         appDemuxCmdType(IMU_CMD_t::CMD_MAX) );
 
     // Start Motor Driver
     md.init();
 
     // Add command handler for Motor Driver
-    appDemuxAddHandler( 
-        std::bind( &MotorDriver::cmd2, std::ref(md), std::placeholders::_1),
+    appDemuxAddHandler(
+        std::bind( &MotorDriver::cmd, std::ref(md), std::placeholders::_1),
         appDemuxCmdType(MOTOR_DRIVER_CMD_t::CMD_MAX) );
 
+    // Add command handler for PID
+    appDemuxAddHandler(
+        std::bind( &MotorDriver::PIDCmd, std::ref(md), std::placeholders::_1),
+        appDemuxCmdType(PID_CMD_t::CMD_MAX) );
 
-    // register callback handler 
+    // register callback handler
     ble_svcs_register(&appDemuxExecHandler);
 
     board_post_init();
 
     // Start execution.
     NRF_LOG_INFO("Balancing Robot example started.");
-  
+ 
     // Enter main loop.
     for (;; cmd_get_cnt++)
     {
@@ -132,9 +136,9 @@ int main(void)
 #ifdef SERIAL_CONSOLE_AVAILABLE
         if ((cmd_get_cnt & 0x0F) == 0)
         {
-
 #endif
             imu.send_all_client_data();
+            md.send_all_client_data();
 #ifdef SERIAL_CONSOLE_AVAILABLE
         }
 #endif
