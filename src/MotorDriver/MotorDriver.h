@@ -30,7 +30,7 @@ class MotorDriver {
 	void cmd(const uint8_t i_cmd);
         void PIDCmd(const uint8_t i_cmd);
         void setValues(pid_ctrl_t driver0, pid_ctrl_t driver1);
-        void setPitchAngle(const float pitch);
+        void setRollAngle(const float roll);
 	void send_all_client_data();
     private:
         PID<pid_ctrl_t> pidCtrl;

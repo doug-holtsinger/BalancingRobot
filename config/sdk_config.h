@@ -2915,7 +2915,7 @@
 // <e> NRFX_QDEC_ENABLED - nrfx_qdec - QDEC peripheral driver
 //==========================================================
 #ifndef NRFX_QDEC_ENABLED
-#define NRFX_QDEC_ENABLED 0
+#define NRFX_QDEC_ENABLED 1
 #endif
 // <o> NRFX_QDEC_CONFIG_REPORTPER  - Report period
  
@@ -2951,14 +2951,14 @@
 
 
 #ifndef NRFX_QDEC_CONFIG_PIO_A
-#define NRFX_QDEC_CONFIG_PIO_A 31
+#define NRFX_QDEC_CONFIG_PIO_A 10
 #endif
 
 // <o> NRFX_QDEC_CONFIG_PIO_B - B pin  <0-31> 
 
 
 #ifndef NRFX_QDEC_CONFIG_PIO_B
-#define NRFX_QDEC_CONFIG_PIO_B 31
+#define NRFX_QDEC_CONFIG_PIO_B 13
 #endif
 
 // <o> NRFX_QDEC_CONFIG_PIO_LED - LED pin  <0-31> 
@@ -2986,7 +2986,7 @@
  
 
 #ifndef NRFX_QDEC_CONFIG_DBFEN
-#define NRFX_QDEC_CONFIG_DBFEN 0
+#define NRFX_QDEC_CONFIG_DBFEN 1
 #endif
 
 // <q> NRFX_QDEC_CONFIG_SAMPLE_INTEN  - Sample ready interrupt enable
@@ -3014,7 +3014,7 @@
 // <e> NRFX_QDEC_CONFIG_LOG_ENABLED - Enables logging in the module.
 //==========================================================
 #ifndef NRFX_QDEC_CONFIG_LOG_ENABLED
-#define NRFX_QDEC_CONFIG_LOG_ENABLED 0
+#define NRFX_QDEC_CONFIG_LOG_ENABLED 1
 #endif
 // <o> NRFX_QDEC_CONFIG_LOG_LEVEL  - Default Severity level
  
@@ -3025,7 +3025,7 @@
 // <4=> Debug 
 
 #ifndef NRFX_QDEC_CONFIG_LOG_LEVEL
-#define NRFX_QDEC_CONFIG_LOG_LEVEL 3
+#define NRFX_QDEC_CONFIG_LOG_LEVEL 4
 #endif
 
 // <o> NRFX_QDEC_CONFIG_INFO_COLOR  - ANSI escape code prefix.
@@ -5094,7 +5094,7 @@
 // <e> QDEC_ENABLED - nrf_drv_qdec - QDEC peripheral driver - legacy layer
 //==========================================================
 #ifndef QDEC_ENABLED
-#define QDEC_ENABLED 0
+#define QDEC_ENABLED 1
 #endif
 // <o> QDEC_CONFIG_REPORTPER  - Report period
  
@@ -5130,14 +5130,14 @@
 
 
 #ifndef QDEC_CONFIG_PIO_A
-#define QDEC_CONFIG_PIO_A 31
+#define QDEC_CONFIG_PIO_A 10
 #endif
 
 // <o> QDEC_CONFIG_PIO_B - B pin  <0-31> 
 
 
 #ifndef QDEC_CONFIG_PIO_B
-#define QDEC_CONFIG_PIO_B 31
+#define QDEC_CONFIG_PIO_B 13
 #endif
 
 // <o> QDEC_CONFIG_PIO_LED - LED pin  <0-31> 
@@ -5165,7 +5165,7 @@
  
 
 #ifndef QDEC_CONFIG_DBFEN
-#define QDEC_CONFIG_DBFEN 0
+#define QDEC_CONFIG_DBFEN 1
 #endif
 
 // <q> QDEC_CONFIG_SAMPLE_INTEN  - Sample ready interrupt enable

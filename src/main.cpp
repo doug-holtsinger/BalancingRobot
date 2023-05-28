@@ -42,6 +42,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include "sdk_config.h"
 #include "nordic_common.h"
 #include "nrf.h"
 #include "nrf_sdm.h"
@@ -58,6 +59,8 @@
 #if defined (UARTE_PRESENT)
 #include "nrf_uarte.h"
 #endif
+#include "nrf_qdec.h"
+#include "nrf_drv_qdec.h"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
@@ -75,17 +78,40 @@
 #include "board_init.h"
 #include "AppDemux.h"
 
+static volatile bool m_report_ready_flag = false;
+static volatile bool m_first_report_flag = true;
+static volatile uint32_t m_accdblread;
+static volatile int32_t m_accread;
+
+static void qdec_event_handler(nrf_drv_qdec_event_t event)
+{
+    if (event.type == NRF_QDEC_EVENT_REPORTRDY)
+    {
+        m_accdblread        = event.data.report.accdbl;
+        m_accread           = event.data.report.acc;
+        m_report_ready_flag = true;
+        nrf_drv_qdec_disable();
+    }
+}
+
 /**@brief Function for application main entry.
  */
 int main(void)
 {
     uint32_t cmd_get_cnt = 0;
+    uint32_t err_code;
     float roll, pitch, yaw;
     IMU imu = IMU();
     MotorDriver md = MotorDriver();
 
     // Initialize.
     board_init();
+
+    // Initialize QDEC hardware
+    //nrfx_qdec_config_t qdec_cfg;
+    //qdec_cfg.pselled = NRF_QDEC_LED_NOT_CONNECTED;
+    err_code = nrf_drv_qdec_init(NULL, qdec_event_handler);
+    APP_ERROR_CHECK(err_code);
 
     // Start IMU
     imu.init();
@@ -131,7 +157,7 @@ int main(void)
         imu.get_angles(roll, pitch, yaw);
         ble_svcs_send_euler_angles(roll, pitch, yaw);
 
-        md.setPitchAngle( pitch );
+        md.setRollAngle( roll );
 
 #ifdef SERIAL_CONSOLE_AVAILABLE
         if ((cmd_get_cnt & 0x0F) == 0)
@@ -144,5 +170,4 @@ int main(void)
 #endif
     }
 }
-
 

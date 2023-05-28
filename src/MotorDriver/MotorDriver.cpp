@@ -92,11 +92,12 @@ MotorDriver::MotorDriver() :
 {
 }
 
-void MotorDriver::setPitchAngle(const float pitch)
+void MotorDriver::setRollAngle(const float roll)
 {
     pid_ctrl_t drv_ctrla, drv_ctrlb; 
 
-    drv_ctrla = drv_ctrlb = pidCtrl.update(pitch);
+    drv_ctrla = pidCtrl.update(roll);
+    drv_ctrlb = -drv_ctrla;
     this->setValues(drv_ctrla, drv_ctrlb);
 }
 
