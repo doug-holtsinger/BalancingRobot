@@ -6,8 +6,8 @@ SDK_ROOT := C:/NordicSDK/nRF5SDK160098a08e2
 
 PROJ_DIR := ./
 PROJ_INC_DIR := .
-#WIRELESS_PROJ_DIR := ../WirelessSensor/Sensor/src
-WIRELESS_PROJ_DIR := ../../WirelessSensor/Sensor/src
+WIRELESS_PROJ_DIR := ../WirelessSensor/Sensor/src
+#WIRELESS_PROJ_DIR := ../../WirelessSensor/Sensor/src
 WIRELESS_INC_DIR := $(WIRELESS_PROJ_DIR)
 MOTOR_DRIVER_SRC_DIR := $(PROJ_DIR)/MotorDriver
 MOTOR_DRIVER_INC_DIR := $(PROJ_DIR)/MotorDriver
