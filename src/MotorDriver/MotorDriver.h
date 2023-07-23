@@ -17,7 +17,7 @@ constexpr float MOTOR_DRIVER_SP_DEFAULT = 0.0;
 constexpr pwm_seq_value_t PWM_POL_FALLING_EDGE = 0x8000;
 constexpr pwm_seq_value_t PWM_POL_RISING_EDGE = 0x0000;
 
-constexpr float MOTOR_PID_KP = PID_CONTROL_SETTING_MAX / 90.0;
+constexpr float MOTOR_PID_KP = PID_CONTROL_SETTING_MAX / 30.0;   // 90.0
 constexpr float MOTOR_PID_KI = MOTOR_PID_KP / 2.0;
 constexpr float MOTOR_PID_KD = 0.0;
 constexpr float MOTOR_PID_SP = 0.0;
@@ -32,8 +32,12 @@ class MotorDriver {
         void setValues(pid_ctrl_t driver0, pid_ctrl_t driver1);
         void setRollAngle(const float roll);
 	void send_all_client_data();
+        void send_client_data(char *p);
     private:
         PID<pid_ctrl_t> pidCtrl;
+	bool motor_enabled;
+	bool display_enabled;
+        pid_ctrl_t drv_ctrla, drv_ctrlb; 
 };
 
 #endif

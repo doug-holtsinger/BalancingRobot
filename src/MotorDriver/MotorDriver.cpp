@@ -67,6 +67,9 @@
 #include "MotorDriver.h"
 #include "MotorDriverCmd.h"
 
+#include "ble_svcs_cmd.h"
+#include "ble_svcs.h"
+
 constexpr int32_t PRINT_DEBUG_INTERVAL = 64;
 
 static nrfx_pwm_t m_pwm0 = NRFX_PWM_INSTANCE(0);
@@ -88,14 +91,14 @@ static uint16_t seq_values[] =
 
 MotorDriver::MotorDriver() :
     pidCtrl({MOTOR_PID_KP, MOTOR_PID_KI, MOTOR_PID_KD}, 
-        MOTOR_PID_SP, PID_CONTROL_SETTING_MAX)
+        MOTOR_PID_SP, PID_CONTROL_SETTING_MAX),
+    motor_enabled(true),
+    display_enabled(true)
 {
 }
 
 void MotorDriver::setRollAngle(const float roll)
 {
-    pid_ctrl_t drv_ctrla, drv_ctrlb; 
-
     drv_ctrla = pidCtrl.update(roll);
     drv_ctrlb = -drv_ctrla;
     this->setValues(drv_ctrla, drv_ctrlb);
@@ -103,6 +106,10 @@ void MotorDriver::setRollAngle(const float roll)
 
 void MotorDriver::setValues(pid_ctrl_t driver0, pid_ctrl_t driver1)
 {
+    if (!motor_enabled)
+    {
+        driver0 = driver1 = 0;
+    }
     if (driver0 >= 0)
     {
         nrfx_gpiote_out_set(MOTOR_DRIVER_APHASE);
@@ -166,13 +173,46 @@ void MotorDriver::init()
 
 }
 
+void MotorDriver::send_client_data(char *p)
+{
+    uint8_t *p_data = (uint8_t *)p;
+    ble_svcs_send_client_notification(p_data, strlen(p));
+}
+
 void MotorDriver::send_all_client_data()
 {
+    char s[NOTIFY_PRINT_STR_MAX_LEN];
+
+    if ( !ble_svcs_connected() || !display_enabled) {
+        return;
+    }
+    snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d %d", 
+                MOTOR_ENABLED, motor_enabled); 
+    send_client_data(s);
+
+    snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d %d", 
+                MOTOR_DRIVER, drv_ctrla);
+    send_client_data(s);
+
+    snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d %d", 
+                MOTOR_DISPLAY, display_enabled); 
+    send_client_data(s);
+
     pidCtrl.send_all_client_data();
 }
 
 void MotorDriver::cmd_internal(const MOTOR_DRIVER_CMD_t i_cmd)
 {
+    switch (i_cmd)
+    {
+        case MOTOR_DRIVER_CMD_t::TOGGLE_POWER:
+            motor_enabled = !motor_enabled;
+            break;
+        case MOTOR_DRIVER_CMD_t::TOGGLE_DISPLAY:
+            display_enabled = !display_enabled;
+            break;
+        default: NRF_LOG_INFO("Invalid Motor cmd %d", i_cmd); break;
+    }
 }
 
 void MotorDriver::cmd(const uint8_t i_cmd)

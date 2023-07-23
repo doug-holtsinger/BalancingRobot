@@ -33,9 +33,9 @@
 #define PID_KD_DEFAULT 0.0
 #define PID_SP_DEFAULT 0.0
 
-#define PID_KP_INCREMENT 1.0
+#define PID_KP_INCREMENT 10.0
 #define PID_KI_INCREMENT 1.0
-#define PID_KD_INCREMENT 0.1
+#define PID_KD_INCREMENT 1.0
 
 #define PID_KP_VALID	0x0001
 #define PID_KI_VALID	0x0002
@@ -106,10 +106,12 @@ class PID {
                 PID_KP,
                 PRINTF_FLOAT_VALUE(pidParams.KP));
             send_client_data(s);
+
             snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT,
                 PID_KI,
                 PRINTF_FLOAT_VALUE(pidParams.KI));
             send_client_data(s);
+
             snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT,
                 PID_KD,
                 PRINTF_FLOAT_VALUE(pidParams.KD));
