@@ -155,16 +155,22 @@ class PID {
 	    controlSetFloat = pidParams.KP * errorDiff;
 
             // KI contribution
-	    for (short unsigned int i=0 ; i < errorHistory.size() ; ++i)
+	    if (pidParams.KI > 0.0)
 	    {
-	        controlSetFloat += (pidParams.KI * errorHistory[i]);
+	        for (short unsigned int i=0 ; i < errorHistory.size() ; ++i)
+	        {
+	            controlSetFloat += (pidParams.KI * errorHistory[i]);
+	        }
 	    }
 
 	    // KD contribution
-            size_t errLen = errorHistory.size();
-	    if (errLen >= 2)
+	    if (pidParams.KD > 0.0)
 	    {
-	        controlSetFloat += (pidParams.KD * (errorHistory[errLen-1] - errorHistory[errLen-2]));
+                size_t errLen = errorHistory.size();
+	        if (errLen >= 2)
+	        {
+	            controlSetFloat += (pidParams.KD * (errorHistory[errLen-1] - errorHistory[errLen-2]));
+	        }
 	    }
 
 	    // Max setting

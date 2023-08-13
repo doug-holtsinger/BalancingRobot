@@ -18,9 +18,12 @@ constexpr pwm_seq_value_t PWM_POL_FALLING_EDGE = 0x8000;
 constexpr pwm_seq_value_t PWM_POL_RISING_EDGE = 0x0000;
 
 constexpr float MOTOR_PID_KP = PID_CONTROL_SETTING_MAX / 30.0;   // 90.0
-constexpr float MOTOR_PID_KI = MOTOR_PID_KP / 2.0;
+constexpr float MOTOR_PID_KI = 0.0;  // MOTOR_PID_KP / 2.0;
 constexpr float MOTOR_PID_KD = 0.0;
 constexpr float MOTOR_PID_SP = 0.0;
+
+// disable the motor past this Roll angle
+constexpr float MOTOR_DISABLE_ROLL_ANGLE = 25.0;
 
 class MotorDriver {
     public:

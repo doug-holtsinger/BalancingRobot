@@ -101,6 +101,10 @@ void MotorDriver::setRollAngle(const float roll)
 {
     drv_ctrla = pidCtrl.update(roll);
     drv_ctrlb = -drv_ctrla;
+    if (roll > MOTOR_DISABLE_ROLL_ANGLE)
+    {
+        drv_ctrla = drv_ctrlb = 0;
+    }
     this->setValues(drv_ctrla, drv_ctrlb);
 }
 
