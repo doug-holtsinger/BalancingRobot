@@ -100,7 +100,9 @@ int main(void)
 {
     uint32_t cmd_get_cnt = 0;
     uint32_t err_code;
-    float roll, pitch, yaw;
+    float roll, pitch, unused1;
+    int16_t roll_i, roll_driver_ratio; 
+    pid_ctrl_t  driver0, unused2;
     IMU imu = IMU();
     MotorDriver md = MotorDriver();
 
@@ -145,29 +147,29 @@ int main(void)
     // Enter main loop.
     for (;; cmd_get_cnt++)
     {
-#ifdef SERIAL_CONSOLE_AVAILABLE
-        if ((cmd_get_cnt & 0xFF) == 0)
-        {
-	    check_app_cmd();
-        }
-#endif
-
         imu.update();
 
-        imu.get_angles(roll, pitch, yaw);
-        ble_svcs_send_euler_angles(roll, pitch, yaw);
+        imu.get_angles(roll, pitch, unused1);
 
         md.setRollAngle( roll );
 
-#ifdef SERIAL_CONSOLE_AVAILABLE
-        if ((cmd_get_cnt & 0x0F) == 0)
-        {
-#endif
+        md.getValues(driver0, unused2);
+
+	if (!ble_svcs_connected())
+	{
+	    // Send data over advertising channel when not connected.
+	    if (roll != 0) 
+	    {
+	        roll_driver_ratio  = (int16_t)(roll / ((float)driver0/8192.0));
+	    } else {
+	        roll_driver_ratio  = 0;
+	    }
+	    roll_i = (int16_t)roll;
+            ble_svcs_send_euler_angles(roll_i, driver0, roll_driver_ratio);
+	} else {
             imu.send_all_client_data();
             md.send_all_client_data();
-#ifdef SERIAL_CONSOLE_AVAILABLE
-        }
-#endif
+	}
     }
 }
 

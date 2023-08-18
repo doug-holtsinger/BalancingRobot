@@ -70,8 +70,6 @@
 #include "ble_svcs_cmd.h"
 #include "ble_svcs.h"
 
-constexpr int32_t PRINT_DEBUG_INTERVAL = 64;
-
 static nrfx_pwm_t m_pwm0 = NRFX_PWM_INSTANCE(0);
 // static int print_debug = 0;
 
@@ -106,6 +104,12 @@ void MotorDriver::setRollAngle(const float roll)
         drv_ctrla = drv_ctrlb = 0;
     }
     this->setValues(drv_ctrla, drv_ctrlb);
+}
+
+void MotorDriver::getValues(pid_ctrl_t& driver0, pid_ctrl_t& driver1)
+{
+    driver0 = drv_ctrla;
+    driver1 = drv_ctrlb;
 }
 
 void MotorDriver::setValues(pid_ctrl_t driver0, pid_ctrl_t driver1)

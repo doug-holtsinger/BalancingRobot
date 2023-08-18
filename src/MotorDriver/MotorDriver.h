@@ -23,7 +23,7 @@ constexpr float MOTOR_PID_KD = 0.0;
 constexpr float MOTOR_PID_SP = 0.0;
 
 // disable the motor past this Roll angle
-constexpr float MOTOR_DISABLE_ROLL_ANGLE = 25.0;
+constexpr float MOTOR_DISABLE_ROLL_ANGLE = 30.0;
 
 class MotorDriver {
     public:
@@ -33,6 +33,7 @@ class MotorDriver {
 	void cmd(const uint8_t i_cmd);
         void PIDCmd(const uint8_t i_cmd);
         void setValues(pid_ctrl_t driver0, pid_ctrl_t driver1);
+        void getValues(pid_ctrl_t& driver0, pid_ctrl_t& driver1);
         void setRollAngle(const float roll);
 	void send_all_client_data();
         void send_client_data(char *p);
