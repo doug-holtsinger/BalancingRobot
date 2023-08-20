@@ -17,13 +17,13 @@ constexpr float MOTOR_DRIVER_SP_DEFAULT = 0.0;
 constexpr pwm_seq_value_t PWM_POL_FALLING_EDGE = 0x8000;
 constexpr pwm_seq_value_t PWM_POL_RISING_EDGE = 0x0000;
 
-constexpr float MOTOR_PID_KP = PID_CONTROL_SETTING_MAX / 30.0;   // 90.0
-constexpr float MOTOR_PID_KI = 0.0;  // MOTOR_PID_KP / 2.0;
+constexpr float MOTOR_PID_KP = PID_CONTROL_SETTING_MAX / 11.0;
+constexpr float MOTOR_PID_KI = 400.0;
 constexpr float MOTOR_PID_KD = 0.0;
 constexpr float MOTOR_PID_SP = 0.0;
 
 // disable the motor past this Roll angle
-constexpr float MOTOR_DISABLE_ROLL_ANGLE = 30.0;
+constexpr float MOTOR_DISABLE_ROLL_ANGLE = 35.0;
 
 class MotorDriver {
     public:
@@ -38,10 +38,12 @@ class MotorDriver {
 	void send_all_client_data();
         void send_client_data(char *p);
     private:
+        void pwm_base_clock_modify(const bool up);
         PID<pid_ctrl_t> pidCtrl;
 	bool motor_enabled;
 	bool display_enabled;
         pid_ctrl_t drv_ctrla, drv_ctrlb; 
+	nrf_pwm_clk_t pwm_base_clock;
 };
 
 #endif

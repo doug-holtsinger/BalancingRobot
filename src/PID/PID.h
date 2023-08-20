@@ -33,9 +33,9 @@
 #define PID_KD_DEFAULT 0.0
 #define PID_SP_DEFAULT 0.0
 
-#define PID_KP_INCREMENT 10.0
-#define PID_KI_INCREMENT 1.0
-#define PID_KD_INCREMENT 1.0
+#define PID_KP_INCREMENT 20.0
+#define PID_KI_INCREMENT 20.0
+#define PID_KD_INCREMENT 20.0
 
 #define PID_KP_VALID	0x0001
 #define PID_KI_VALID	0x0002
@@ -70,18 +70,30 @@ class PID {
                     break;
 		case PID_CMD_t::PID_KP_DOWN:
                     pidParams.KP -= PID_KP_INCREMENT;
+		    if (pidParams.KP < 0.0)
+		    {
+                        pidParams.KP = 0.0;
+		    }
                     break;
 		case PID_CMD_t::PID_KI_UP:
                     pidParams.KI += PID_KI_INCREMENT;
                     break;
 		case PID_CMD_t::PID_KI_DOWN:
                     pidParams.KI -= PID_KI_INCREMENT;
+		    if (pidParams.KI < 0.0)
+		    {
+                        pidParams.KI = 0.0;
+		    }
                     break;
 		case PID_CMD_t::PID_KD_UP:
                     pidParams.KD += PID_KD_INCREMENT;
                     break;
 		case PID_CMD_t::PID_KD_DOWN:
                     pidParams.KD -= PID_KD_INCREMENT;
+		    if (pidParams.KD < 0.0)
+		    {
+                        pidParams.KD = 0.0;
+		    }
                     break;
                 default:
                     NRF_LOG_INFO("Invalid cmd %d", i_cmd);
@@ -151,7 +163,7 @@ class PID {
 	        errorHistory.erase(errorHistory.cbegin());
 	    }
 
-            // KD contribution
+            // KP contribution
 	    controlSetFloat = pidParams.KP * errorDiff;
 
             // KI contribution

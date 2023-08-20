@@ -91,7 +91,10 @@ MotorDriver::MotorDriver() :
     pidCtrl({MOTOR_PID_KP, MOTOR_PID_KI, MOTOR_PID_KD}, 
         MOTOR_PID_SP, PID_CONTROL_SETTING_MAX),
     motor_enabled(true),
-    display_enabled(true)
+    display_enabled(true),
+    drv_ctrla(0), 
+    drv_ctrlb(0), 
+    pwm_base_clock(NRF_PWM_CLK_8MHz)
 {
 }
 
@@ -99,7 +102,7 @@ void MotorDriver::setRollAngle(const float roll)
 {
     drv_ctrla = pidCtrl.update(roll);
     drv_ctrlb = -drv_ctrla;
-    if (roll > MOTOR_DISABLE_ROLL_ANGLE)
+    if (abs(roll) > MOTOR_DISABLE_ROLL_ANGLE)
     {
         drv_ctrla = drv_ctrlb = 0;
     }
@@ -159,7 +162,7 @@ void MotorDriver::init()
             NRFX_PWM_PIN_NOT_USED,     // channel 3
         },
         .irq_priority = APP_IRQ_PRIORITY_LOWEST,
-        .base_clock   = NRF_PWM_CLK_125kHz,
+        .base_clock   = pwm_base_clock,
         .count_mode   = NRF_PWM_MODE_UP,
         .top_value    = MOTOR_DRIVER_TOP_VALUE,
         //.load_mode    = NRF_PWM_LOAD_COMMON,
@@ -206,7 +209,77 @@ void MotorDriver::send_all_client_data()
                 MOTOR_DISPLAY, display_enabled); 
     send_client_data(s);
 
+    snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d %d", 
+                PWM_CLOCK, pwm_base_clock); 
+    send_client_data(s);
+
     pidCtrl.send_all_client_data();
+}
+
+void MotorDriver::pwm_base_clock_modify(const bool up)
+{
+    // clock up, requires decreasing PWM CLK enum value
+    // clock down, requires increasing PWM CLK enum value
+    if (!up)
+    {
+        switch (pwm_base_clock)
+        {
+            case NRF_PWM_CLK_125kHz:
+                pwm_base_clock = NRF_PWM_CLK_250kHz;
+                break;
+            case NRF_PWM_CLK_250kHz:
+                pwm_base_clock = NRF_PWM_CLK_500kHz;
+                break;
+            case NRF_PWM_CLK_500kHz:
+                pwm_base_clock = NRF_PWM_CLK_1MHz;
+                break;
+            case NRF_PWM_CLK_1MHz:
+                pwm_base_clock = NRF_PWM_CLK_2MHz;
+                break;
+            case NRF_PWM_CLK_2MHz:
+                pwm_base_clock = NRF_PWM_CLK_4MHz;
+                break;
+            case NRF_PWM_CLK_4MHz:
+                pwm_base_clock = NRF_PWM_CLK_8MHz;
+                break;
+            case NRF_PWM_CLK_8MHz:
+                pwm_base_clock = NRF_PWM_CLK_16MHz;
+                break;
+            case NRF_PWM_CLK_16MHz:
+            default: break;
+        }
+    } else 
+    {
+        switch (pwm_base_clock)
+        {
+            case NRF_PWM_CLK_125kHz:
+                break;
+            case NRF_PWM_CLK_250kHz:
+                pwm_base_clock = NRF_PWM_CLK_125kHz;
+                break;
+            case NRF_PWM_CLK_500kHz:
+                pwm_base_clock = NRF_PWM_CLK_250kHz;
+                break;
+            case NRF_PWM_CLK_1MHz:
+                pwm_base_clock = NRF_PWM_CLK_500kHz;
+                break;
+            case NRF_PWM_CLK_2MHz:
+                pwm_base_clock = NRF_PWM_CLK_1MHz;
+                break;
+            case NRF_PWM_CLK_4MHz:
+                pwm_base_clock = NRF_PWM_CLK_2MHz;
+                break;
+            case NRF_PWM_CLK_8MHz:
+                pwm_base_clock = NRF_PWM_CLK_4MHz;
+                break;
+            case NRF_PWM_CLK_16MHz:
+                pwm_base_clock = NRF_PWM_CLK_8MHz;
+                break;
+            default: break;
+        }
+    }
+    nrf_pwm_configure(m_pwm0.p_registers,
+        pwm_base_clock, NRF_PWM_MODE_UP, MOTOR_DRIVER_TOP_VALUE);
 }
 
 void MotorDriver::cmd_internal(const MOTOR_DRIVER_CMD_t i_cmd)
@@ -218,6 +291,12 @@ void MotorDriver::cmd_internal(const MOTOR_DRIVER_CMD_t i_cmd)
             break;
         case MOTOR_DRIVER_CMD_t::TOGGLE_DISPLAY:
             display_enabled = !display_enabled;
+            break;
+        case MOTOR_DRIVER_CMD_t::PWM_CLK_UP:
+	    pwm_base_clock_modify(true);
+            break;
+        case MOTOR_DRIVER_CMD_t::PWM_CLK_DOWN:
+	    pwm_base_clock_modify(false);
             break;
         default: NRF_LOG_INFO("Invalid Motor cmd %d", i_cmd); break;
     }
