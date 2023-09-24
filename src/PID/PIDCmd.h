@@ -12,7 +12,10 @@ enum class PID_CMD_t : uint8_t
     PID_KI_DOWN,
     PID_KD_UP,
     PID_KD_DOWN,
-    CMD_MAX = PID_KD_DOWN 
+    PID_SP_UP,
+    PID_SP_DOWN,
+    PID_PARAMS_SAVE,
+    CMD_MAX = PID_PARAMS_SAVE
 };
 
 

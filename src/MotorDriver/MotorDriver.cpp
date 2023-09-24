@@ -88,8 +88,8 @@ static uint16_t seq_values[] =
 };
 
 MotorDriver::MotorDriver() :
-    pidCtrl({MOTOR_PID_KP, MOTOR_PID_KI, MOTOR_PID_KD}, 
-        MOTOR_PID_SP, PID_CONTROL_SETTING_MAX),
+    pidCtrl({MOTOR_PID_KP, MOTOR_PID_KI, MOTOR_PID_KD, MOTOR_PID_SP},
+        PID_CONTROL_SETTING_MAX),
     motor_enabled(true),
     display_enabled(true),
     drv_ctrla(0), 
@@ -139,6 +139,8 @@ void MotorDriver::setValues(pid_ctrl_t driver0, pid_ctrl_t driver1)
 
 void MotorDriver::init()
 {
+    pidCtrl.init();
+
     if (!nrfx_gpiote_is_init())
     {
         APP_ERROR_CHECK(nrfx_gpiote_init());

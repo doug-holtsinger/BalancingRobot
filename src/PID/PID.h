@@ -27,6 +27,7 @@
 #include "ble_svcs_cmd.h"
 #include "ble_svcs.h"
 
+#include "param_store.h"
 
 #define PID_KP_DEFAULT 1.0
 #define PID_KI_DEFAULT 0.0
@@ -36,29 +37,51 @@
 #define PID_KP_INCREMENT 20.0
 #define PID_KI_INCREMENT 20.0
 #define PID_KD_INCREMENT 20.0
+#define PID_SP_INCREMENT 0.05
 
 #define PID_KP_VALID	0x0001
 #define PID_KI_VALID	0x0002
 #define PID_KD_VALID	0x0004
 #define PID_PARAM_VALID	0x0007
 
+#define PID_RECORD_KEY 0x7011
+
 constexpr uint32_t PID_ERROR_HISTORY_DEPTH = 3;
 
-struct pidParameters
+typedef struct 
 {
     float KP {PID_KP_DEFAULT};
     float KI {PID_KI_DEFAULT};
     float KD {PID_KD_DEFAULT};
-};
+    float SP {PID_SP_DEFAULT};
+} pidParameters_t;
 
 template <typename T>
 class PID {
     public:
-        PID(const pidParameters i_param, const float i_SP, const T i_pidControlMax) :
+        PID(const pidParameters_t i_param, const T i_pidControlMax) :
 		pidParams(i_param),
-		SP(i_SP),
-		controlSettingMax(i_pidControlMax)
+		controlSettingMax(i_pidControlMax),
+		param_store(PID_RECORD_KEY)
 	{
+	}
+
+	void init()
+	{
+            pidParameters_t pp;
+            param_store.init(&pidParams);
+            pp = param_store.get();
+	    init_params(pp);
+	}
+
+	void init_params(pidParameters_t params)
+	{
+            pidParams = params;
+	}
+
+	void params_save()
+	{
+            param_store.set(&pidParams); 
 	}
 
         void cmd(const PID_CMD_t i_cmd)
@@ -95,6 +118,15 @@ class PID {
                         pidParams.KD = 0.0;
 		    }
                     break;
+		case PID_CMD_t::PID_SP_UP:
+                    pidParams.SP += PID_SP_INCREMENT;
+                    break;
+		case PID_CMD_t::PID_SP_DOWN:
+                    pidParams.SP -= PID_SP_INCREMENT;
+                    break;
+		case PID_CMD_t::PID_PARAMS_SAVE:
+		    params_save();
+                    break;
                 default:
                     NRF_LOG_INFO("Invalid cmd %d", i_cmd);
                     break;
@@ -128,9 +160,14 @@ class PID {
                 PID_KD,
                 PRINTF_FLOAT_VALUE(pidParams.KD));
             send_client_data(s);
+
+            snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT,
+                PID_SP,
+                PRINTF_FLOAT_VALUE(pidParams.SP));
+            send_client_data(s);
 	}
 
-	void setParameters(const pidParameters i_param, const uint16_t flags)
+	void setParameters(const pidParameters_t i_param, const uint16_t flags)
 	{
             if (flags & PID_KP_VALID)
 	    {
@@ -146,14 +183,19 @@ class PID {
 	    }
 	}
 
-        void setpoint(const float i_SP)
+        void setSP(const float i_SP)
 	{
-            SP = i_SP;
+            pidParams.SP = i_SP;
+	}
+
+        float getSP()
+	{
+            return pidParams.SP; 
 	}
 
 	T update(const float i_PV)
 	{
-            float errorDiff = i_PV - SP;
+            float errorDiff = i_PV - pidParams.SP;
 	    float controlSetFloat;
 
 	    // error history
@@ -199,10 +241,10 @@ class PID {
             return controlSetting;
 	}
     private:
-	pidParameters pidParams;
-        float SP {PID_SP_DEFAULT};
-	T controlSetting {0};
+	pidParameters_t pidParams;		// local copy of PID parameters
 	T controlSettingMax {0};
+	T controlSetting {0};
+        ParamStore<pidParameters_t> param_store;
 	std::vector<float> errorHistory;
 };
 #endif

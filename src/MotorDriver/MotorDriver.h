@@ -38,12 +38,12 @@ class MotorDriver {
 	void send_all_client_data();
         void send_client_data(char *p);
     private:
-        void pwm_base_clock_modify(const bool up);
         PID<pid_ctrl_t> pidCtrl;
 	bool motor_enabled;
 	bool display_enabled;
         pid_ctrl_t drv_ctrla, drv_ctrlb; 
 	nrf_pwm_clk_t pwm_base_clock;
+        void pwm_base_clock_modify(const bool up);
 };
 
 #endif
