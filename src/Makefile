@@ -12,6 +12,8 @@ WIRELESS_INC_DIR := $(WIRELESS_PROJ_DIR)
 MOTOR_DRIVER_SRC_DIR := $(PROJ_DIR)/MotorDriver
 MOTOR_DRIVER_INC_DIR := $(PROJ_DIR)/MotorDriver
 PID_INC_DIR := $(PROJ_DIR)/PID
+QDEC_INC_DIR := $(PROJ_DIR)/QDEC
+QDEC_SRC_DIR := $(PROJ_DIR)/QDEC
 I2C_SRC_DIR := $(WIRELESS_PROJ_DIR)/I2C
 I2C_INC_DIR := $(WIRELESS_PROJ_DIR)/I2C
 IMU_SRC_DIR := $(WIRELESS_PROJ_DIR)/IMU
@@ -54,6 +56,7 @@ SRC_FILES += \
   $(LIS3MDL_SRC_DIR)/LIS3MDLSensor.cpp \
   $(BOARD_SRC_DIR)/board_init.cpp \
   $(APPDEMUX_SRC_DIR)/AppDemux.cpp \
+  $(QDEC_SRC_DIR)/QDEC.cpp \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52840.S \
   $(SDK_ROOT)/components/libraries/bsp/bsp.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp_btn_ble.c \
@@ -173,6 +176,7 @@ INC_FOLDERS += \
   $(PROJ_INC_DIR) \
   $(MOTOR_DRIVER_INC_DIR) \
   $(PID_INC_DIR) \
+  $(QDEC_INC_DIR) \
   $(WIRELESS_INC_DIR) \
   $(I2C_INC_DIR) \
   $(IMU_INC_DIR) \

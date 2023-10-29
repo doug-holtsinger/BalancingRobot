@@ -2929,7 +2929,7 @@
 // <7=> 280 Samples 
 
 #ifndef NRFX_QDEC_CONFIG_REPORTPER
-#define NRFX_QDEC_CONFIG_REPORTPER 0
+#define NRFX_QDEC_CONFIG_REPORTPER 7
 #endif
 
 // <o> NRFX_QDEC_CONFIG_SAMPLEPER  - Sample period
@@ -2944,28 +2944,28 @@
 // <7=> 16384 us 
 
 #ifndef NRFX_QDEC_CONFIG_SAMPLEPER
-#define NRFX_QDEC_CONFIG_SAMPLEPER 7
+#define NRFX_QDEC_CONFIG_SAMPLEPER 0
 #endif
 
 // <o> NRFX_QDEC_CONFIG_PIO_A - A pin  <0-31> 
 
 
 #ifndef NRFX_QDEC_CONFIG_PIO_A
-#define NRFX_QDEC_CONFIG_PIO_A 10
+#define NRFX_QDEC_CONFIG_PIO_A 15
 #endif
 
 // <o> NRFX_QDEC_CONFIG_PIO_B - B pin  <0-31> 
 
 
 #ifndef NRFX_QDEC_CONFIG_PIO_B
-#define NRFX_QDEC_CONFIG_PIO_B 13
+#define NRFX_QDEC_CONFIG_PIO_B 2
 #endif
 
 // <o> NRFX_QDEC_CONFIG_PIO_LED - LED pin  <0-31> 
 
 
 #ifndef NRFX_QDEC_CONFIG_PIO_LED
-#define NRFX_QDEC_CONFIG_PIO_LED 31
+#define NRFX_QDEC_CONFIG_PIO_LED 30
 #endif
 
 // <o> NRFX_QDEC_CONFIG_LEDPRE - LED pre 
@@ -2986,7 +2986,7 @@
  
 
 #ifndef NRFX_QDEC_CONFIG_DBFEN
-#define NRFX_QDEC_CONFIG_DBFEN 1
+#define NRFX_QDEC_CONFIG_DBFEN 0
 #endif
 
 // <q> NRFX_QDEC_CONFIG_SAMPLE_INTEN  - Sample ready interrupt enable
@@ -3014,7 +3014,7 @@
 // <e> NRFX_QDEC_CONFIG_LOG_ENABLED - Enables logging in the module.
 //==========================================================
 #ifndef NRFX_QDEC_CONFIG_LOG_ENABLED
-#define NRFX_QDEC_CONFIG_LOG_ENABLED 1
+#define NRFX_QDEC_CONFIG_LOG_ENABLED 0
 #endif
 // <o> NRFX_QDEC_CONFIG_LOG_LEVEL  - Default Severity level
  
@@ -5108,7 +5108,7 @@
 // <7=> 280 Samples 
 
 #ifndef QDEC_CONFIG_REPORTPER
-#define QDEC_CONFIG_REPORTPER 0
+#define QDEC_CONFIG_REPORTPER 7
 #endif
 
 // <o> QDEC_CONFIG_SAMPLEPER  - Sample period
@@ -5123,7 +5123,7 @@
 // <7=> 16384 us 
 
 #ifndef QDEC_CONFIG_SAMPLEPER
-#define QDEC_CONFIG_SAMPLEPER 7
+#define QDEC_CONFIG_SAMPLEPER 0
 #endif
 
 // <o> QDEC_CONFIG_PIO_A - A pin  <0-31> 
@@ -5165,7 +5165,7 @@
  
 
 #ifndef QDEC_CONFIG_DBFEN
-#define QDEC_CONFIG_DBFEN 1
+#define QDEC_CONFIG_DBFEN 0
 #endif
 
 // <q> QDEC_CONFIG_SAMPLE_INTEN  - Sample ready interrupt enable
@@ -8585,7 +8585,7 @@
 // <4=> Debug 
 
 #ifndef QDEC_CONFIG_LOG_LEVEL
-#define QDEC_CONFIG_LOG_LEVEL 3
+#define QDEC_CONFIG_LOG_LEVEL 4
 #endif
 
 // <o> QDEC_CONFIG_INFO_COLOR  - ANSI escape code prefix.

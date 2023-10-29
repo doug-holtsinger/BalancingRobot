@@ -59,8 +59,6 @@
 #if defined (UARTE_PRESENT)
 #include "nrf_uarte.h"
 #endif
-#include "nrf_qdec.h"
-#include "nrf_drv_qdec.h"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
@@ -77,42 +75,27 @@
 #include "MotorDriver.h"
 #include "board_init.h"
 #include "AppDemux.h"
-
-static volatile bool m_report_ready_flag = false;
-static volatile bool m_first_report_flag = true;
-static volatile uint32_t m_accdblread;
-static volatile int32_t m_accread;
-
-static void qdec_event_handler(nrf_drv_qdec_event_t event)
-{
-    if (event.type == NRF_QDEC_EVENT_REPORTRDY)
-    {
-        m_accdblread        = event.data.report.accdbl;
-        m_accread           = event.data.report.acc;
-        m_report_ready_flag = true;
-        nrf_drv_qdec_disable();
-    }
-}
+#include "QDEC.h"
 
 /**@brief Function for application main entry.
  */
 int main(void)
 {
     uint32_t cmd_get_cnt = 0;
-    uint32_t err_code;
     float roll, pitch, yaw;
     int16_t roll_i, pitch_i, yaw_i;
     IMU imu = IMU();
     MotorDriver md = MotorDriver();
+#if 0
+    int16_t wheel_position; 
+    int16_t accdbl; 
+#endif
 
     // Initialize.
     board_init();
 
-    // Initialize QDEC hardware
-    //nrfx_qdec_config_t qdec_cfg;
-    //qdec_cfg.pselled = NRF_QDEC_LED_NOT_CONNECTED;
-    err_code = nrf_drv_qdec_init(NULL, qdec_event_handler);
-    APP_ERROR_CHECK(err_code);
+    // Start QDEC
+    QDEC qdec = QDEC();
 
     // Start IMU
     imu.init();
@@ -150,7 +133,33 @@ int main(void)
 
         imu.get_angles(roll, pitch, yaw);
 
+	///DSH4
+	roll = 55.0;
         md.setRollAngle( roll );
+
+#if 1
+	if ((cmd_get_cnt & 0x3FF) == 0) 
+	{
+            NRF_LOG_INFO("alive %d", cmd_get_cnt);
+            // NRF_LOG_INFO(" %u", nrf_gpio_pin_read(NRF_QDEC_C1));
+            //NRF_LOG_INFO(" %u", nrf_gpio_pin_read(NRF_QDEC_C2));
+            //NRF_LOG_INFO(" qdec en %u", nrf_qdec_enable_get());
+#if 0
+            NRF_LOG_INFO(" acc      %u", nrf_qdec_acc_get());
+            NRF_LOG_INFO(" samplper %u", nrf_qdec_sampleper_reg_get());
+            NRF_LOG_INFO(" sampl    %d", nrf_qdec_sample_get());
+            NRF_LOG_INFO(" reportper %u", nrf_qdec_reportper_reg_get());
+#endif
+	}
+#endif
+
+#if 0
+	qdec.read_acc(&wheel_position, &accdbl);
+	if (wheel_position != 0)
+            NRF_LOG_INFO("NEW acc %hd", wheel_position);
+	if (accdbl != 0)
+            NRF_LOG_INFO("NEW accdbl %hd", accdbl);
+#endif
 
 	if (!ble_svcs_connected())
 	{
