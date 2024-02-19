@@ -40,3 +40,8 @@
 // Configuration for BalancingRobot
 #define BALANCING_ROBOT_CONFIG
 
+#define MOTOR_PID_RECORD_KEY 0x7011
+#define SPEED_PID_RECORD_KEY 0x7012
+
+#define MOTOR_PID_NUM 0
+#define SPEED_PID_NUM 1

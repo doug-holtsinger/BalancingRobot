@@ -64,7 +64,7 @@
 
 //static volatile bool m_report_ready_flag = false;
 static volatile uint32_t m_accdblread;
-static volatile int32_t m_accread;
+extern int32_t wheel_encoder;
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,10 +74,10 @@ void qdec_event_handler(nrfx_qdec_event_t event) {
 
     if (event.type == NRF_QDEC_EVENT_REPORTRDY)
     {
-        m_accread = event.data.report.acc;
-        NRF_LOG_INFO("accread: %d", m_accread);
-        m_accdblread        = event.data.report.accdbl;
-        NRF_LOG_INFO("accreaddbl: %d", m_accdblread);
+        wheel_encoder = event.data.report.acc;
+        //NRF_LOG_INFO("accread: %d", m_accread);
+        //m_accdblread        = event.data.report.accdbl;
+        //NRF_LOG_INFO("accreaddbl: %d", m_accdblread);
         // m_report_ready_flag = true;
         // nrf_drv_qdec_disable();
     }
@@ -105,6 +105,7 @@ QDEC::QDEC()
 #endif
     // qdec_cfg.reportper = NRF_QDEC_REPORTPER_DISABLED;
     APP_ERROR_CHECK(nrfx_qdec_init(&qdec_cfg, qdec_event_handler));
+    //DSH4
 #if 0
     // keep all QDEC interrupts disabled.
     nrf_qdec_int_disable( NRF_QDEC_INT_SAMPLERDY_MASK |
@@ -125,5 +126,7 @@ void QDEC::read_acc(int16_t *p_acc, int16_t *p_accdbl)
     // capture the ACC in the ACCREAD register, clear the ACC,
     // and return the ACCREAD register. 
     nrfx_qdec_accumulators_read(p_acc, p_accdbl);
+    //*p_acc = m_accread;
+    //*p_accdbl = m_accdblread;
 }
 

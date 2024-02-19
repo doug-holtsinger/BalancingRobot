@@ -1,5 +1,6 @@
 
 #ifndef __PID__H
+#define __PID__H
 
 #include "app_config.h"
 #include "sdk_config.h"
@@ -24,6 +25,7 @@
 #include "PIDCmd.h"
 
 #include "notify.h"
+#include "notify_robot.h"
 #include "ble_svcs_cmd.h"
 #include "ble_svcs.h"
 
@@ -44,8 +46,6 @@
 #define PID_KD_VALID	0x0004
 #define PID_PARAM_VALID	0x0007
 
-#define PID_RECORD_KEY 0x7011
-
 constexpr uint32_t PID_ERROR_HISTORY_DEPTH = 3;
 
 typedef struct 
@@ -59,10 +59,11 @@ typedef struct
 template <typename T>
 class PID {
     public:
-        PID(const pidParameters_t i_param, const T i_pidControlMax) :
+        PID(const pidParameters_t i_param, const T i_pidControlMax, const uint16_t paramRecordKey, uint16_t i_pidNum) :
 		pidParams(i_param),
 		controlSettingMax(i_pidControlMax),
-		param_store(PID_RECORD_KEY)
+		param_store(paramRecordKey),
+		pidNum(i_pidNum)
 	{
 	}
 
@@ -147,23 +148,23 @@ class PID {
                 return;
             }
             snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT,
-                PID_KP,
+                PID_NOTIFY(PID_KP, pidNum),
                 PRINTF_FLOAT_VALUE(pidParams.KP));
             send_client_data(s);
 
             snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT,
-                PID_KI,
+                PID_NOTIFY(PID_KI, pidNum),
                 PRINTF_FLOAT_VALUE(pidParams.KI));
             send_client_data(s);
 
             snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT,
-                PID_KD,
+                PID_NOTIFY(PID_KD, pidNum),
                 PRINTF_FLOAT_VALUE(pidParams.KD));
             send_client_data(s);
 
-            snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT,
-                PID_SP,
-                PRINTF_FLOAT_VALUE(pidParams.SP));
+            snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT2,
+                PID_NOTIFY(PID_SP, pidNum),
+                PRINTF_FLOAT_VALUE2(pidParams.SP));
             send_client_data(s);
 	}
 
@@ -246,6 +247,7 @@ class PID {
 	T controlSetting {0};
         ParamStore<pidParameters_t> param_store;
 	std::vector<float> errorHistory;
+        uint16_t pidNum;
 };
 #endif
 

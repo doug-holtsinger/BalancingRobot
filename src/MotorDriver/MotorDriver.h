@@ -1,5 +1,6 @@
 
 #ifndef __MOTOR_DRIVER__H
+#define __MOTOR_DRIVER__H
 
 #include "PID.h"
 #include "MotorDriverCmd.h"
@@ -30,11 +31,15 @@ class MotorDriver {
         MotorDriver();
         void init();
 	void cmd_internal(const MOTOR_DRIVER_CMD_t i_cmd);
+	// FIXME -- change to MOTOR_DRIVER_CMD_t instead of uint8_t
 	void cmd(const uint8_t i_cmd);
+	// FIXME -- change to PID_CMD_t instead of uint8_t
         void PIDCmd(const uint8_t i_cmd);
         void setValues(pid_ctrl_t driver0, pid_ctrl_t driver1);
         void getValues(pid_ctrl_t& driver0, pid_ctrl_t& driver1);
-        void setRollAngle(const float roll);
+        void setActualRollAngle(float i_roll);
+        void setDesiredRollAngle(float i_roll);
+	void setSP(float setPoint);
 	void send_all_client_data();
         void send_client_data(char *p);
     private:

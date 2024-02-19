@@ -1,5 +1,6 @@
 
 #ifndef __QDEC__H
+#define __QDEC__H
 
 #include "nrfx_qdec.h"
 #include "hal/nrf_gpio.h"

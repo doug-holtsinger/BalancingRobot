@@ -89,7 +89,7 @@ static uint16_t seq_values[] =
 
 MotorDriver::MotorDriver() :
     pidCtrl({MOTOR_PID_KP, MOTOR_PID_KI, MOTOR_PID_KD, MOTOR_PID_SP},
-        PID_CONTROL_SETTING_MAX),
+        PID_CONTROL_SETTING_MAX, MOTOR_PID_RECORD_KEY, MOTOR_PID_NUM),
     motor_enabled(true),
     display_enabled(true),
     drv_ctrla(0), 
@@ -98,15 +98,20 @@ MotorDriver::MotorDriver() :
 {
 }
 
-void MotorDriver::setRollAngle(const float roll)
+void MotorDriver::setActualRollAngle(float i_roll)
 {
-    drv_ctrla = pidCtrl.update(roll);
+    drv_ctrla = pidCtrl.update(i_roll);
     drv_ctrlb = -drv_ctrla;
-    if (abs(roll) > MOTOR_DISABLE_ROLL_ANGLE)
+    if (abs(i_roll) > MOTOR_DISABLE_ROLL_ANGLE)
     {
         drv_ctrla = drv_ctrlb = 0;
     }
     this->setValues(drv_ctrla, drv_ctrlb);
+}
+
+void MotorDriver::setDesiredRollAngle(float i_roll)
+{
+    pidCtrl.setSP(i_roll);
 }
 
 void MotorDriver::getValues(pid_ctrl_t& driver0, pid_ctrl_t& driver1)
