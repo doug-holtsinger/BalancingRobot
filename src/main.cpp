@@ -78,14 +78,19 @@
 #include "AppDemux.h"
 #include "QDEC.h"
 
-constexpr float SPEED_PID_KP = 1.0;
+constexpr float SPEED_PID_KP = 0.02;
 constexpr float SPEED_PID_KI = 0.0;
 constexpr float SPEED_PID_KD = 0.0;
 constexpr float SPEED_PID_SP = 0.0;
-constexpr float SPEED_PID_CTRL_MAX = 5.0;
+constexpr float SPEED_PID_KP_INCR = 0.005;
+constexpr float SPEED_PID_KI_INCR = 0.005;
+constexpr float SPEED_PID_KD_INCR = 0.005;
+constexpr float SPEED_PID_SP_INCR = 0.05;
+constexpr float SPEED_PID_CTRL_MAX = 1.0;
+constexpr bool SPEED_PID_REVERSE_OUTPUT = true;
+constexpr bool SPEED_PID_LOW_PASS_FILTER = true;
 
-int32_t wheel_encoder;
-float wheel_speed = 0.0;
+extern int32_t wheel_encoder;
 
 /**@brief Function for application main entry.
  */
@@ -102,7 +107,10 @@ int main(void)
     int16_t wheel_position; 
     int16_t accdbl; 
 #endif
-    PID speedControlPID = PID({SPEED_PID_KP, SPEED_PID_KI, SPEED_PID_KD, SPEED_PID_SP}, SPEED_PID_CTRL_MAX, SPEED_PID_RECORD_KEY, SPEED_PID_NUM);
+    PID speedControlPID = PID({SPEED_PID_KP, SPEED_PID_KI, SPEED_PID_KD, SPEED_PID_SP}, 
+           {SPEED_PID_KP_INCR, SPEED_PID_KI_INCR, SPEED_PID_KD_INCR, SPEED_PID_SP_INCR}, 
+            SPEED_PID_CTRL_MAX, SPEED_PID_RECORD_KEY, SPEED_PID_NUM, 
+	    SPEED_PID_REVERSE_OUTPUT, SPEED_PID_LOW_PASS_FILTER);
 
     // Initialize.
     board_init();
@@ -159,10 +167,7 @@ int main(void)
 
         md.setActualRollAngle( roll );
 
-	// Low-pass filter
-	wheel_speed = 0.8 * wheel_speed + 0.2 * wheel_encoder;
-
-        speedControlSP = speedControlPID.update(wheel_speed);
+        speedControlSP = speedControlPID.update(static_cast<float>(wheel_encoder));
         md.setDesiredRollAngle(speedControlSP);
 
 #if 0
@@ -170,7 +175,6 @@ int main(void)
 	{
             NRF_LOG_INFO("alive %d", cmd_get_cnt);
             NRF_LOG_INFO("enc   %d", wheel_encoder);
-            NRF_LOG_INFO("spd   %f", wheel_speed);
             NRF_LOG_INFO("setP %f", speedControlSP);
             //NRF_LOG_INFO(" %u", nrf_gpio_pin_read(NRF_QDEC_C2));
             //NRF_LOG_INFO(" qdec en %u", nrf_qdec_enable_get());

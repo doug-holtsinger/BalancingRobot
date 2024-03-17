@@ -64,7 +64,7 @@
 
 //static volatile bool m_report_ready_flag = false;
 static volatile uint32_t m_accdblread;
-extern int32_t wheel_encoder;
+int32_t wheel_encoder = 0;
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,7 +75,7 @@ void qdec_event_handler(nrfx_qdec_event_t event) {
     if (event.type == NRF_QDEC_EVENT_REPORTRDY)
     {
         wheel_encoder = event.data.report.acc;
-        //NRF_LOG_INFO("accread: %d", m_accread);
+        // NRF_LOG_INFO("wheel: %d", wheel_encoder);
         //m_accdblread        = event.data.report.accdbl;
         //NRF_LOG_INFO("accreaddbl: %d", m_accdblread);
         // m_report_ready_flag = true;
@@ -105,7 +105,6 @@ QDEC::QDEC()
 #endif
     // qdec_cfg.reportper = NRF_QDEC_REPORTPER_DISABLED;
     APP_ERROR_CHECK(nrfx_qdec_init(&qdec_cfg, qdec_event_handler));
-    //DSH4
 #if 0
     // keep all QDEC interrupts disabled.
     nrf_qdec_int_disable( NRF_QDEC_INT_SAMPLERDY_MASK |

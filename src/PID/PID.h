@@ -36,11 +36,6 @@
 #define PID_KD_DEFAULT 0.0
 #define PID_SP_DEFAULT 0.0
 
-#define PID_KP_INCREMENT 20.0
-#define PID_KI_INCREMENT 20.0
-#define PID_KD_INCREMENT 20.0
-#define PID_SP_INCREMENT 0.05
-
 #define PID_KP_VALID	0x0001
 #define PID_KI_VALID	0x0002
 #define PID_KD_VALID	0x0004
@@ -59,11 +54,18 @@ typedef struct
 template <typename T>
 class PID {
     public:
-        PID(const pidParameters_t i_param, const T i_pidControlMax, const uint16_t paramRecordKey, uint16_t i_pidNum) :
+        PID(const pidParameters_t i_param, const pidParameters_t i_increment, 
+			const T i_pidControlMax, const uint16_t paramRecordKey, 
+			const uint16_t i_pidNum, const bool i_reverse_output = false,
+			const bool i_low_pass_filter = false) :
 		pidParams(i_param),
+		pidIncrement(i_increment),
 		controlSettingMax(i_pidControlMax),
 		param_store(paramRecordKey),
-		pidNum(i_pidNum)
+		pidNum(i_pidNum),
+		reverseOutput(i_reverse_output),
+		lowPassFilter(i_low_pass_filter),
+		l_PV(0.0)
 	{
 	}
 
@@ -90,40 +92,40 @@ class PID {
             switch (i_cmd)
             {
 		case PID_CMD_t::PID_KP_UP:
-                    pidParams.KP += PID_KP_INCREMENT;
+                    pidParams.KP += pidIncrement.KP;
                     break;
 		case PID_CMD_t::PID_KP_DOWN:
-                    pidParams.KP -= PID_KP_INCREMENT;
+                    pidParams.KP -= pidIncrement.KP;
 		    if (pidParams.KP < 0.0)
 		    {
                         pidParams.KP = 0.0;
 		    }
                     break;
 		case PID_CMD_t::PID_KI_UP:
-                    pidParams.KI += PID_KI_INCREMENT;
+                    pidParams.KI += pidIncrement.KI;
                     break;
 		case PID_CMD_t::PID_KI_DOWN:
-                    pidParams.KI -= PID_KI_INCREMENT;
+                    pidParams.KI -= pidIncrement.KI;
 		    if (pidParams.KI < 0.0)
 		    {
                         pidParams.KI = 0.0;
 		    }
                     break;
 		case PID_CMD_t::PID_KD_UP:
-                    pidParams.KD += PID_KD_INCREMENT;
+                    pidParams.KD += pidIncrement.KD;
                     break;
 		case PID_CMD_t::PID_KD_DOWN:
-                    pidParams.KD -= PID_KD_INCREMENT;
+                    pidParams.KD -= pidIncrement.KD;
 		    if (pidParams.KD < 0.0)
 		    {
                         pidParams.KD = 0.0;
 		    }
                     break;
 		case PID_CMD_t::PID_SP_UP:
-                    pidParams.SP += PID_SP_INCREMENT;
+                    pidParams.SP += pidIncrement.SP;
                     break;
 		case PID_CMD_t::PID_SP_DOWN:
-                    pidParams.SP -= PID_SP_INCREMENT;
+                    pidParams.SP -= pidIncrement.SP;
                     break;
 		case PID_CMD_t::PID_PARAMS_SAVE:
 		    params_save();
@@ -147,24 +149,36 @@ class PID {
 	    if ( !ble_svcs_connected() ) {
                 return;
             }
-            snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT,
+            snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT2,
                 PID_NOTIFY(PID_KP, pidNum),
-                PRINTF_FLOAT_VALUE(pidParams.KP));
+                PRINTF_FLOAT_VALUE2(pidParams.KP));
             send_client_data(s);
 
-            snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT,
+            snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT2,
                 PID_NOTIFY(PID_KI, pidNum),
-                PRINTF_FLOAT_VALUE(pidParams.KI));
+                PRINTF_FLOAT_VALUE2(pidParams.KI));
             send_client_data(s);
 
-            snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT,
+            snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT2,
                 PID_NOTIFY(PID_KD, pidNum),
-                PRINTF_FLOAT_VALUE(pidParams.KD));
+                PRINTF_FLOAT_VALUE2(pidParams.KD));
             send_client_data(s);
 
             snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT2,
                 PID_NOTIFY(PID_SP, pidNum),
                 PRINTF_FLOAT_VALUE2(pidParams.SP));
+            send_client_data(s);
+
+	    // For PID=1, this is the motor encoding in floating point
+            snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT,
+                PID_NOTIFY(PID_PV, pidNum),
+                PRINTF_FLOAT_VALUE(l_PV_save));
+            send_client_data(s);
+
+	    // For PID=1, this becomes the setpoint for the Motor PID
+            snprintf(s, NOTIFY_PRINT_STR_MAX_LEN, "%d " PRINTF_FLOAT_FORMAT2,
+                PID_NOTIFY(PID_OUTPUT, pidNum),
+                PRINTF_FLOAT_VALUE2(controlSetting));
             send_client_data(s);
 	}
 
@@ -196,8 +210,14 @@ class PID {
 
 	T update(const float i_PV)
 	{
-            float errorDiff = i_PV - pidParams.SP;
-	    float controlSetFloat;
+            if (lowPassFilter)
+	    {
+                l_PV = 0.8 * l_PV + 0.2 * i_PV;
+	    } else {
+                l_PV = i_PV; 
+	    }
+	    l_PV_save = i_PV;
+            const float errorDiff = l_PV - pidParams.SP;
 
 	    // error history
 	    errorHistory.push_back(errorDiff);
@@ -207,7 +227,7 @@ class PID {
 	    }
 
             // KP contribution
-	    controlSetFloat = pidParams.KP * errorDiff;
+	    float controlSetFloat = pidParams.KP * errorDiff;
 
             // KI contribution
 	    if (pidParams.KI > 0.0)
@@ -231,23 +251,46 @@ class PID {
 	    // Max setting
 	    if (controlSetFloat > controlSettingMax)
 	    {
-                controlSetting = controlSettingMax;
+                controlSetFloat = controlSettingMax;
 	    } else if (controlSetFloat < -controlSettingMax)
 	    {
-                controlSetting = -controlSettingMax;
-	    } else {
+                controlSetFloat = -controlSettingMax;
+	    } 
+
+	    if (typeid(controlSetting) != typeid(float)) {
+		// round to integer
 	        controlSetting = floor(controlSetFloat + 0.5);
+	    } else {
+	        controlSetting = controlSetFloat;
 	    }
+
+	    if (reverseOutput)
+	    {
+                controlSetting = -controlSetting;
+	    }
+#if 0
+	    if (pidNum == 1)
+	    {
+                NRF_LOG_INFO("i_PV" PRINTF_FLOAT_FORMAT " l_PV " PRINTF_FLOAT_FORMAT2 " ctrl " PRINTF_FLOAT_FORMAT2, PRINTF_FLOAT_VALUE(i_PV), PRINTF_FLOAT_VALUE2(l_PV), PRINTF_FLOAT_VALUE2(controlSetting));
+	    }
+#endif
 
             return controlSetting;
 	}
     private:
 	pidParameters_t pidParams;		// local copy of PID parameters
-	T controlSettingMax {0};
+	const pidParameters_t pidIncrement;		// local copy of PID Increment values
+	const T controlSettingMax {0};
 	T controlSetting {0};
         ParamStore<pidParameters_t> param_store;
 	std::vector<float> errorHistory;
-        uint16_t pidNum;
+        const uint16_t pidNum;
+	const bool reverseOutput;
+	const bool lowPassFilter;
+
+	float l_PV;
+	float l_PV_save;
+	float controlSettingSave;
 };
 #endif
 

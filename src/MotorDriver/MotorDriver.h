@@ -18,10 +18,14 @@ constexpr float MOTOR_DRIVER_SP_DEFAULT = 0.0;
 constexpr pwm_seq_value_t PWM_POL_FALLING_EDGE = 0x8000;
 constexpr pwm_seq_value_t PWM_POL_RISING_EDGE = 0x0000;
 
-constexpr float MOTOR_PID_KP = PID_CONTROL_SETTING_MAX / 11.0;
-constexpr float MOTOR_PID_KI = 400.0;
+constexpr float MOTOR_PID_KP = PID_CONTROL_SETTING_MAX / 18.6;
+constexpr float MOTOR_PID_KI = 200.0;
 constexpr float MOTOR_PID_KD = 0.0;
 constexpr float MOTOR_PID_SP = 0.0;
+constexpr float MOTOR_PID_KP_INCR = 2.0;
+constexpr float MOTOR_PID_KI_INCR = 2.0;
+constexpr float MOTOR_PID_KD_INCR = 2.0;
+constexpr float MOTOR_PID_SP_INCR = 0.05;
 
 // disable the motor past this Roll angle
 constexpr float MOTOR_DISABLE_ROLL_ANGLE = 35.0;
