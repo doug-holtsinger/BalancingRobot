@@ -2,7 +2,7 @@ PROJECT_NAME     := WirelessSensor
 TARGETS          := nrf52840_xxaa
 OUTPUT_DIRECTORY := ../_build
 
-SDK_ROOT := C:/NordicSDK/nRF5SDK160098a08e2
+SDK_ROOT := ${HOME}/NordicSDK/nRF5_SDK_17.1.0_ddde560
 
 PROJ_DIR := ./
 PROJ_INC_DIR := .
@@ -337,8 +337,8 @@ INC_FOLDERS += \
 
 # Libraries common to all targets
 LIB_FILES += \
-  $(SDK_ROOT)/external/nrf_cc310/lib/cortex-m4/hard-float/libnrf_cc310_0.9.12.a \
-  $(SDK_ROOT)/external/nrf_oberon/lib/cortex-m4/hard-float/liboberon_3.0.1.a \
+  $(SDK_ROOT)/external/nrf_cc310/lib/cortex-m4/hard-float/libnrf_cc310_0.9.13.a \
+  $(SDK_ROOT)/external/nrf_oberon/lib/cortex-m4/hard-float/liboberon_3.0.8.a \
 
 # Optimization flags
 OPT = -O3 -g3
@@ -453,20 +453,38 @@ $(foreach target, $(TARGETS), $(call define_target, $(target)))
 
 listing: nrf52840_xxaa.lst
 
-.PHONY: flash flash_softdevice erase
+.PHONY: flash flash_softdevice erase program program_softdevice
 
+# For use with open bootloader
+# Program the Application
+program:
+	nrfutil nrf5sdk-tools pkg generate app.zip --hw-version 52 --sd-req 0x100 --application ../_build/nrf52840_xxaa.hex --application-version-string 1.0.0
+	nrfutil nrf5sdk-tools dfu  usb-serial --port /dev/ttyACM0 --package app.zip 
+	rm -f app.zip
+
+# For use with open bootloader
+# Program the Soft Device
+program_softdevice:
+	nrfutil nrf5sdk-tools pkg generate sd.zip --hw-version 52 --sd-req 0x100 --softdevice $(SDK_ROOT)/components/softdevice/s140/hex/s140_nrf52_7.2.0_softdevice.hex --sd-id 0x100
+	#nrfutil nrf5sdk-tools pkg generate sd.zip --hw-version 52 --softdevice $(SDK_ROOT)/components/softdevice/s140/hex/s140_nrf52_7.2.0_softdevice.hex
+	nrfutil nrf5sdk-tools dfu  usb-serial --port /dev/ttyACM0 --package sd.zip
+	rm -f sd.zip
+
+# For use with SEGGER programmer
 # Flash the program
 flash: default
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52840_xxaa.hex
 	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52840_xxaa.hex --sectorerase
 	nrfjprog -f nrf52 --reset
 
+# For use with SEGGER programmer
 # Flash softdevice
 flash_softdevice:
 	@echo Flashing: s140_nrf52_7.0.1_softdevice.hex
-	nrfjprog -f nrf52 --program $(SDK_ROOT)/components/softdevice/s140/hex/s140_nrf52_7.0.1_softdevice.hex --sectorerase
+	nrfjprog -f nrf52 --program $(SDK_ROOT)/components/softdevice/s140/hex/s140_nrf52_7.2.0_softdevice.hex --sectorerase
 	nrfjprog -f nrf52 --reset
 
+# For use with SEGGER programmer
 erase:
 	nrfjprog -f nrf52 --eraseall
 
