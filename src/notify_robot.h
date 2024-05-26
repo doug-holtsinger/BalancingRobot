@@ -2,9 +2,11 @@
 #ifndef __NOTIFY_ROBOT_H__
 #define __NOTIFY_ROBOT_H__
 
+#include <notify.h>
+
 #define NOTIFY_PRINT_STR_MAX_LEN (size_t)256
 
-#define PID_NOTIFY(_base, _idx) (_base + 6*_idx)
+#define PID_NOTIFY(_base, _idx) (_base + (PID_KP1-PID_KP)*_idx)
 
 typedef enum
 {
@@ -25,6 +27,8 @@ typedef enum
     PID_SP1,
     PID_PV1,
     PID_OUTPUT1,
+
+    LAG
 
 } DATA_NOTIFY_ROBOT_t;
 

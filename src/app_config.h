@@ -45,3 +45,8 @@
 
 #define MOTOR_PID_NUM 0
 #define SPEED_PID_NUM 1
+
+// IMU override to provide better sensitivity to changes in the acceleration
+// vector at the expense of stability
+#define NOISE_THRESHOLD_MULTIPLIER_ACCELEROMETER 0.0
+

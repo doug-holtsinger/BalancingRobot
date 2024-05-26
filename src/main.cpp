@@ -77,6 +77,7 @@
 #include "board_init.h"
 #include "AppDemux.h"
 #include "QDEC.h"
+#include "PERF.h"
 
 constexpr float SPEED_PID_KP = 0.02;
 constexpr float SPEED_PID_KI = 0.0;
@@ -153,6 +154,9 @@ int main(void)
     // register callback handler
     ble_svcs_register(&appDemuxExecHandler);
 
+    // Start performance measurement
+    PERF perf = PERF();
+
     board_post_init();
 
     // Start execution.
@@ -169,6 +173,8 @@ int main(void)
 
         speedControlSP = speedControlPID.update(static_cast<float>(wheel_encoder));
         md.setDesiredRollAngle(speedControlSP);
+
+	perf.update(roll, md.getValue(), wheel_encoder);
 
 #if 0
 	if ((cmd_get_cnt & 0x3FF) == 0) 
@@ -209,6 +215,7 @@ int main(void)
             imu.send_all_client_data();
             md.send_all_client_data();
             speedControlPID.send_all_client_data();
+	    perf.send_all_client_data();
 	}
     }
 }

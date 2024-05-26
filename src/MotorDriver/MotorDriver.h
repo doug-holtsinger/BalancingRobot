@@ -6,7 +6,6 @@
 #include "MotorDriverCmd.h"
 
 typedef int16_t pid_ctrl_t;
-typedef uint16_t motor_ctrl_t;
 typedef uint16_t pwm_top_value_t;
 typedef uint16_t pwm_seq_value_t;
 
@@ -19,7 +18,7 @@ constexpr pwm_seq_value_t PWM_POL_FALLING_EDGE = 0x8000;
 constexpr pwm_seq_value_t PWM_POL_RISING_EDGE = 0x0000;
 
 constexpr float MOTOR_PID_KP = PID_CONTROL_SETTING_MAX / 18.6;
-constexpr float MOTOR_PID_KI = 200.0;
+constexpr float MOTOR_PID_KI = 100.0;
 constexpr float MOTOR_PID_KD = 0.0;
 constexpr float MOTOR_PID_SP = 0.0;
 constexpr float MOTOR_PID_KP_INCR = 2.0;
@@ -41,6 +40,7 @@ class MotorDriver {
         void PIDCmd(const uint8_t i_cmd);
         void setValues(pid_ctrl_t driver0, pid_ctrl_t driver1);
         void getValues(pid_ctrl_t& driver0, pid_ctrl_t& driver1);
+        pid_ctrl_t getValue(void);
         void setActualRollAngle(float i_roll);
         void setDesiredRollAngle(float i_roll);
 	void setSP(float setPoint);

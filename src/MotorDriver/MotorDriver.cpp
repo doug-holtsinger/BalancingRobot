@@ -63,7 +63,7 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 
-#include "notify.h"
+#include "notify_robot.h"
 #include "MotorDriver.h"
 #include "MotorDriverCmd.h"
 
@@ -119,6 +119,11 @@ void MotorDriver::getValues(pid_ctrl_t& driver0, pid_ctrl_t& driver1)
 {
     driver0 = drv_ctrla;
     driver1 = drv_ctrlb;
+}
+
+pid_ctrl_t MotorDriver::getValue()
+{
+    return drv_ctrla;
 }
 
 void MotorDriver::setValues(pid_ctrl_t driver0, pid_ctrl_t driver1)

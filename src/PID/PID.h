@@ -24,7 +24,6 @@
 #include <vector>
 #include "PIDCmd.h"
 
-#include "notify.h"
 #include "notify_robot.h"
 #include "ble_svcs_cmd.h"
 #include "ble_svcs.h"
@@ -41,7 +40,7 @@
 #define PID_KD_VALID	0x0004
 #define PID_PARAM_VALID	0x0007
 
-constexpr uint32_t PID_ERROR_HISTORY_DEPTH = 3;
+constexpr uint32_t PID_ERROR_HISTORY_DEPTH = 6;
 
 typedef struct 
 {
@@ -87,6 +86,13 @@ class PID {
             param_store.set(&pidParams); 
 	}
 
+	void params_erase()
+	{
+            param_store.erase(); 
+	    // Don't reinitialize parameters after erasing record in flash storage.
+	    // Perform a device reset or power cycle to reinitialize parameters.
+	}
+
         void cmd(const PID_CMD_t i_cmd)
         {
             switch (i_cmd)
@@ -129,6 +135,9 @@ class PID {
                     break;
 		case PID_CMD_t::PID_PARAMS_SAVE:
 		    params_save();
+                    break;
+		case PID_CMD_t::PID_PARAMS_ERASE:
+		    params_erase();
                     break;
                 default:
                     NRF_LOG_INFO("Invalid cmd %d", i_cmd);
@@ -228,6 +237,12 @@ class PID {
 
             // KP contribution
 	    float controlSetFloat = pidParams.KP * errorDiff;
+#if 0
+	    if (pidNum == 0)
+	    {
+                NRF_LOG_INFO("err " PRINTF_FLOAT_FORMAT2 " KP " PRINTF_FLOAT_FORMAT " ctrl " PRINTF_FLOAT_FORMAT2, PRINTF_FLOAT_VALUE2(errorDiff), PRINTF_FLOAT_VALUE(pidParams.KP), PRINTF_FLOAT_VALUE2(controlSetFloat));
+	    }
+#endif
 
             // KI contribution
 	    if (pidParams.KI > 0.0)
@@ -235,6 +250,12 @@ class PID {
 	        for (short unsigned int i=0 ; i < errorHistory.size() ; ++i)
 	        {
 	            controlSetFloat += (pidParams.KI * errorHistory[i]);
+#if 0
+	    if (pidNum == 0)
+	    {
+                NRF_LOG_INFO("erri " PRINTF_FLOAT_FORMAT2 " KI " PRINTF_FLOAT_FORMAT " ctrl " PRINTF_FLOAT_FORMAT2, PRINTF_FLOAT_VALUE2(errorHistory[i]), PRINTF_FLOAT_VALUE(pidParams.KI), PRINTF_FLOAT_VALUE2(controlSetFloat));
+	    }
+#endif
 	        }
 	    }
 
@@ -269,9 +290,9 @@ class PID {
                 controlSetting = -controlSetting;
 	    }
 #if 0
-	    if (pidNum == 1)
+	    if (pidNum == 0)
 	    {
-                NRF_LOG_INFO("i_PV" PRINTF_FLOAT_FORMAT " l_PV " PRINTF_FLOAT_FORMAT2 " ctrl " PRINTF_FLOAT_FORMAT2, PRINTF_FLOAT_VALUE(i_PV), PRINTF_FLOAT_VALUE2(l_PV), PRINTF_FLOAT_VALUE2(controlSetting));
+                NRF_LOG_INFO("set " PRINTF_FLOAT_FORMATI, PRINTF_FLOAT_VALUEI(controlSetting));
 	    }
 #endif
 
